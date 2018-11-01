@@ -1,5 +1,11 @@
 package io.github.gitbucket.markedj;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 
 public class Options {
@@ -10,6 +16,7 @@ public class Options {
     private boolean sanitize = false;
     private String langPrefix = "lang-";
     private String headerPrefix = "";
+    private Map<String, Set<String>> tagClassMap = new HashMap<>();
     private Whitelist whitelist = new Whitelist()
                 .addTags(
                         "a", "b", "blockquote", "br", "caption", "cite", "code", "col",
@@ -85,6 +92,44 @@ public class Options {
 
     public Whitelist getWhitelist(){
         return whitelist;
+    }
+
+    
+    /**
+     * add css class to tag
+     * 
+     * @param tagName
+     * @param additionalClass
+     */
+    public void addTagClass(String tagName, String... additionalClass) {
+    	if (Jsoup.isValid(tagName, whitelist)) {
+    		Set<String> classSet = this.tagClassMap.get(tagName);
+    		if (classSet == null) {
+    			classSet = new HashSet<>();
+    			this.tagClassMap.put(tagName, classSet);
+    		}
+    		for (String add : additionalClass) {
+    			classSet.add(add);
+    		}
+    	}
+    }
+    
+    /**
+     * get tag's class
+     * @param tagName
+     * @return
+     */
+    public String getTagClass(String tagName) {
+    	Set<String> classSet = this.tagClassMap.get(tagName);
+    	if (classSet == null || classSet.isEmpty()) {
+    		return null;
+    	}
+    	
+    	StringBuilder classString = new StringBuilder();
+    	for (String className : classSet) {
+    		classString.append(className).append(" ");
+    	}
+    	return classString.toString();
     }
 
 }
